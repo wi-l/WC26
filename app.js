@@ -1,6 +1,6 @@
 "use strict";
 
-const TZ = "Australia/Brisbane";
+const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Brisbane";
 const AUS = new Set(["Australia"]);
 const KO_ORDER = ["Round of 32", "Round of 16", "Quarter-final", "Semi-final", "Match for third place", "Final"];
 
