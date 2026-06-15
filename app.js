@@ -56,6 +56,10 @@ function el(tag, cls, txt) {
   return e;
 }
 
+// Scores the user has chosen to reveal — kept so re-renders don't re-blur them.
+const REVEALED = new Set();
+const matchKey = (m) => `${m.date}|${m.team1}|${m.team2}`;
+
 // A fixture row with spoiler-safe score cell. `showDate` adds the date under the time.
 function matchRow(m, now, showDate) {
   const isAU = AUS.has(m.team1) || AUS.has(m.team2);
@@ -82,9 +86,13 @@ function matchRow(m, now, showDate) {
   const tdScore = el("td", "score");
   const st = scoreState(m, now);
   if (st.kind === "ft") {
-    const b = el("span", "reveal hidden", st.text);
+    const key = matchKey(m);
+    const b = el("span", "reveal" + (REVEALED.has(key) ? "" : " hidden"), st.text);
     b.setAttribute("aria-label", "tap to reveal score");
-    b.addEventListener("click", () => b.classList.toggle("hidden"));
+    b.addEventListener("click", () => {
+      const hidden = b.classList.toggle("hidden");
+      if (hidden) REVEALED.delete(key); else REVEALED.add(key);
+    });
     tdScore.append(b);
   } else {
     tdScore.append(el("span", "reveal upcoming", st.kind === "live" ? "LIVE" : "–"));
@@ -210,23 +218,37 @@ function goToGroup(name) {
   scrollToId(groupId(name));
 }
 
-function show(view) {
-  localStorage.setItem("wc_view", view);
+let CURRENT_VIEW = "day";
+
+function render(view) {
   for (const b of document.querySelectorAll("#tabs button"))
     b.classList.toggle("active", b.dataset.view === view);
   const app = document.getElementById("app");
   app.textContent = "";
-  const now = new Date();
-  VIEWS[view](app, MATCHES, now);
-  if (view === "day") {
-    scrollToId("anchor");
-  } else {
-    window.scrollTo(0, 0);
-  }
+  VIEWS[view](app, MATCHES, new Date());
+}
+
+function show(view) {
+  CURRENT_VIEW = view;
+  localStorage.setItem("wc_view", view);
+  render(view);
+  if (view === "day") scrollToId("anchor");
+  else window.scrollTo(0, 0);
+}
+
+// Re-render in place (keeps scroll + revealed scores) so relative times,
+// LIVE badges and final scores stay current without a manual reload.
+function tick() {
+  if (!MATCHES.length) return;
+  const y = window.scrollY;
+  render(CURRENT_VIEW);
+  window.scrollTo(0, y);
 }
 
 document.querySelectorAll("#tabs button").forEach((b) =>
   b.addEventListener("click", () => show(b.dataset.view)));
+setInterval(tick, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
 
 const DATA_URL = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
 
