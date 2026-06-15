@@ -228,7 +228,9 @@ function show(view) {
 document.querySelectorAll("#tabs button").forEach((b) =>
   b.addEventListener("click", () => show(b.dataset.view)));
 
-fetch("data.json", { cache: "no-store" })
+const DATA_URL = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
+
+fetch(DATA_URL, { cache: "no-store" })
   .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
   .then((data) => {
     MATCHES = data.matches
@@ -241,5 +243,5 @@ fetch("data.json", { cache: "no-store" })
   })
   .catch((e) => {
     document.getElementById("app").innerHTML =
-      `<div class="err">Couldn't load data.json (${e.message}). Run ./fetch.sh.</div>`;
+      `<div class="err">Couldn't load match data (${e.message}). Try again shortly.</div>`;
   });

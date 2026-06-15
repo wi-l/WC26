@@ -1,9 +1,7 @@
-# World Cup 2026
+# WC26
 
-All 104 fixtures shown in your device's local time, with day/group/knockout views, computed group tables, and tap-to-reveal scores. Data from openfootball, no API key.
+World Cup 2026 fixtures in your device's local time — day/group/knockout views, computed group tables, and tap-to-reveal scores. Live data from openfootball, no API key.
 
-## Run
+Hosted at https://wi-l.github.io/WC26/
 
-    python3 server.py
-
-Serves on http://0.0.0.0:8456 and refreshes `data.json` every 30 minutes. Python 3 standard library only — no dependencies.
+Run locally with any static server, e.g. `python3 -m http.server`.
